@@ -40,7 +40,9 @@ npm install
 - **Node.js ≥ 18** (uses native `fetch`)
 - A valid **long-lived Threads access token** with scopes:
   - `threads_basic`
+  - `threads_read_replies`
   - `threads_delete`
+  - `threads_manage_insights` _(only needed for `--min-likes`)_
 
 ---
 
