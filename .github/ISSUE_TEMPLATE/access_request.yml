@@ -1,7 +1,8 @@
 name: Request Test Access
 description: Request to be added as a tester for the Threads Deleter app
 title: '[ACCESS]: Requesting test access'
-labels: ['access-request']
+labels: ['Access request']
+assignees: ['dstN']
 body:
   - type: markdown
     attributes:
