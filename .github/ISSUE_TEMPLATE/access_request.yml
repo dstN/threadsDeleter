@@ -19,10 +19,10 @@ body:
     validations:
       required: true
 
-  - type: confirmation
+  - type: checkboxes
     id: consent
     attributes:
-      label: I understand this is a manual process
-      description: I understand that the maintainer may or may not grant access, and I will need to accept the tester invitation in my Instagram settings.
-    validations:
-      required: true
+      label: Confirmation
+      options:
+        - label: I understand this is a manual process and I will check my Instagram/Threads notifications for the invite.
+          required: true
