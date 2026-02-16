@@ -17,6 +17,11 @@ _No unreleased changes._
 - **Meta Compliance** — Added `POST /auth/deauthorize` and `POST /auth/data-deletion` callbacks with `signed_request` validation.
 - **Zero-Cookie Architecture** — Refactored web interface to use `SessionStorage` and hidden form fields instead of server-side sessions/cookies.
 - **Privacy Improvements** — Updated Privacy Policy to reflect "No Cookie" status.
+- **GDPR Compliance** — Removed external Google Fonts calls; now hosting `@fontsource/inter` locally.
+
+### Fixed
+
+- **Login CSS** — Fixed missing stylesheet link on login page.
 
 ### Changed
 

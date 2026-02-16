@@ -22,7 +22,7 @@
 | **Token masking**           | Access tokens are redacted in all log output                       |
 | **DotEnv support**          | Reads `THREADS_ACCESS_TOKEN` from `.env` automatically             |
 | **Loop mode**               | `--loop` keeps running every ~24h until the profile is empty       |
-| **Stateless Privacy**       | **No cookies**, no database. Tokens live in your browser session   |
+| **Stateless Privacy**       | **No cookies**, strict GDPR compliance (Local Fonts).              |
 | **Vercel Ready**            | Optimized for serverless deployment (Vercel, AWS Lambda, etc.)     |
 | **Meta Compliance**         | Includes Data Deletion and Deauthorize callback endpoints          |
 | **Docker ready**            | Multi-stage Dockerfile + docker-compose included                   |

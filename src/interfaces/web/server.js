@@ -23,8 +23,8 @@ export function createServer() {
 			contentSecurityPolicy: {
 				directives: {
 					defaultSrc: ["'self'"],
-					styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-					fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+					styleSrc: ["'self'", "'unsafe-inline'"],
+					fontSrc: ["'self'"],
 					scriptSrc: ["'self'", "'unsafe-inline'"],
 				},
 			},
@@ -44,7 +44,13 @@ export function createServer() {
 	app.set('views', path.join(__dirname, 'views'));
 
 	// ─── Static files ──────────────────────────────────────────
-	app.use(express.static(path.join(__dirname, 'public')));
+	const publicPath = path.join(__dirname, 'public');
+	console.log(`Serving static files from: ${publicPath}`); // Debug log
+	app.use(express.static(publicPath));
+
+	// Serve Inter font locally from node_modules
+	const fontPath = path.resolve(__dirname, '../../../node_modules/@fontsource/inter');
+	app.use('/fonts', express.static(fontPath));
 
 	// ─── Routes ────────────────────────────────────────────────
 	app.use('/', createRoutes(logger));
