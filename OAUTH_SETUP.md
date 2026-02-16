@@ -24,14 +24,14 @@ To allow users to log in with their Threads account, you need to set up a Meta A
 2. Copy the **App ID** -> set as `THREADS_CLIENT_ID` in `.env`.
 3. Click "Show" next to **App Secret**, copy it -> set as `THREADS_CLIENT_SECRET` in `.env`.
 
-## 4. Add Testers (Important!)
+## 4. Add Testers (Crucial for Personal Apps)
 
-While in Development mode, only users listed as testers can log in.
+**Important:** Even if your app is "Live" (Published), permissions like `threads_basic` require App Review to work for the public. For a personal tool, you must bypass this by adding your account as a Tester.
 
 1. Go to **App Roles > Roles**.
 2. Click **Add Testers**.
-3. Enter the specific Threads username(s) you want to use.
-4. The user must accept the invitation at [developers.facebook.com/requests](https://developers.facebook.com/requests).
+3. Enter the specific Threads/Instagram username(s) you want to use.
+4. **Crucial:** The user must log in to Instagram and accept the invitation at [developers.facebook.com/requests](https://developers.facebook.com/requests) (or in Instagram Settings > Apps and Websites > Tester Invites).
 
 ## 5. Environment Variables
 
