@@ -1,8 +1,6 @@
 name: Request Test Access
 description: Request to be added as a tester for the Threads Deleter app
 title: '[ACCESS]: Requesting test access'
-start_message: |
-  **Note:** This application is currently in private testing. Maintainers manually add testers.
 labels: ['access-request']
 body:
   - type: markdown
