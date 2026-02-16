@@ -142,7 +142,7 @@ export function dashboard(logger) {
 			logger.error({ action: 'dashboard_error', error: err.message });
 			res.render('login', {
 				title: 'Login',
-				error: 'Token is invalid or expired. Please log in again.',
+				error: `Login failed: ${err.message}`,
 			});
 		}
 	};
