@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No unreleased changes._
 
+## [2.1.1] - 2026-02-16
+
+### Fixed
+
+- **Login Loop** — Fixed infinite redirect loop caused by invalid tokens in `sessionStorage`.
+- **Login Error** — Dashboard now exposes detailed API error messages for debugging.
+- **CI Linting** — Updated workflow to support ESLint v9.
+
+### Changed
+
+- **Documentation** — Clarified Tester requirement for personal apps (`OAUTH_SETUP.md`).
+- **Security** — Removed `SECURITY.md` per user request.
+- **Login UI** — Added link to GitHub Issues for requesting tester access.
+
 ## [2.1.0] - 2026-02-16
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "threads-deleter",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Enterprise-grade CLI & web tool to delete posts and replies from your Threads profile via the official Threads API.",
   "main": "src/app.js",
   "bin": {
