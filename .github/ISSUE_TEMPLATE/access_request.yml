@@ -1,0 +1,28 @@
+name: Request Test Access
+description: Request to be added as a tester for the Threads Deleter app
+title: '[ACCESS]: Requesting test access'
+start_message: |
+  **Note:** This application is currently in private testing. Maintainers manually add testers.
+labels: ['access-request']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your interest in Threads Deleter! To use the deployed version, your Instagram/Threads account must be manually added to the Allow List by the maintainer.
+
+  - type: input
+    id: username
+    attributes:
+      label: Instagram/Threads Username
+      description: The EXACT username of the account you want to use.
+      placeholder: e.g. zuck
+    validations:
+      required: true
+
+  - type: confirmation
+    id: consent
+    attributes:
+      label: I understand this is a manual process
+      description: I understand that the maintainer may or may not grant access, and I will need to accept the tester invitation in my Instagram settings.
+    validations:
+      required: true
