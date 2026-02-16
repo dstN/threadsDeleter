@@ -1,4 +1,4 @@
-import { writeFileSync, appendFileSync, existsSync } from 'node:fs';
+import { writeFileSync, appendFileSync } from 'node:fs';
 
 /**
  * Structured logger with level filtering, optional file output,
@@ -20,7 +20,7 @@ const LEVELS = { error: 0, warn: 1, info: 2, debug: 3 };
  * @param {string}   [opts.token]   – access token to mask in output
  * @returns {object} logger with error/warn/info/debug methods + summary()
  */
-export function createLogger({ logLevel = 'info', verbose = false, output, token }) {
+export function createLogger({ logLevel = 'info', verbose = false, output, token } = {}) {
 	const effectiveLevel = verbose ? 'debug' : logLevel;
 	const threshold = LEVELS[effectiveLevel] ?? LEVELS.info;
 

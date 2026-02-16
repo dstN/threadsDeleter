@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — Threads Deleter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Threads Deleter</h1>
+      <p>Manage your Threads content</p>
+    </header>
+
+    <div class="user-badge">
+      Connected as <strong>@<%= user.username || 'unknown' %></strong>
+      &nbsp;&middot;&nbsp;
+      <a href="/dashboard" style="color: var(--text-muted); font-size: 0.85rem;">← Back</a>
+    </div>
+
+    <div class="card">
+      <h2>Preview — <%= items.length %> item<%= items.length !== 1 ? 's' : '' %> found</h2>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+        Type: <strong><%= opts.type %></strong>
+        <% if (opts.dryRun) { %>&nbsp;&middot;&nbsp;<span style="color: var(--warning);">DRY-RUN</span><% } %>
+        <% if (opts.minLikes !== undefined) { %>&nbsp;&middot;&nbsp;Min likes: <strong><%= opts.minLikes %></strong><% } %>
+      </p>
+    </div>
+
+    <form action="/delete" method="POST">
+      <!-- Stateless: Pass all state required for deletion -->
+      <input type="hidden" name="token" value="<%= token %>">
+      <input type="hidden" name="user" value="<%= JSON.stringify(user) %>">
+      <input type="hidden" name="itemsJSON" value="<%= itemsJSON %>">
+      <input type="hidden" name="type" value="<%= opts.type %>">
+      <input type="hidden" name="limit" value="<%= opts.limit %>">
+      <input type="hidden" name="dryRun" value="<%= opts.dryRun %>">
+      <input type="hidden" name="minLikes" value="<%= opts.minLikes %>">
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="margin: 0;">Select Items</h2>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" onclick="toggleAll(true)" class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Select All</button>
+            <button type="button" onclick="toggleAll(false)" class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Deselect All</button>
+          </div>
+        </div>
+
+        <div class="item-list">
+          <% items.forEach(function(item, i) { %>
+            <div class="item-row">
+              <input type="checkbox" name="selectedItems" value="<%= item.id %>" id="item-<%= i %>" checked>
+              <label for="item-<%= i %>" class="item-content">
+                <span class="item-text">
+                  <% if (item.text) { %>
+                    <%= item.text.length > 120 ? item.text.slice(0, 120) + '…' : item.text %>
+                  <% } else { %>
+                    <em style="color:var(--text-muted);">No text</em>
+                  <% } %>
+                </span>
+                <span class="item-meta">
+                  <%= item.is_reply ? '↩ Reply' : '📝 Post' %>
+                  <% if (item.likes !== null && item.likes !== undefined) { %> · ♥ <%= item.likes %><% } %>
+                  <% if (item.timestamp) { %> · <%= new Date(item.timestamp).toLocaleDateString() %><% } %>
+                </span>
+              </label>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+      <div class="destructive-warning">
+        <strong>⚠ Warning:</strong> Checked items will be <strong>permanently deleted</strong>.
+        Uncheck any items you want to keep.
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+        <button type="submit" class="btn btn-danger" style="flex: 1;">
+          <%= opts.dryRun ? 'Dry Run Selected' : 'Delete Selected' %>
+        </button>
+        <a href="/dashboard" class="btn btn-outline" style="flex: 0 0 auto; width: auto; padding: 0.75rem 1.5rem;">Cancel</a>
+      </div>
+    </form>
+
+    <footer>
+      Threads Deleter &mdash; Use responsibly
+      <br>
+      <a href="/privacy" style="color: var(--text-muted); text-decoration: none; margin-right: 1rem;">Privacy Policy</a>
+      <a href="/tos" style="color: var(--text-muted); text-decoration: none;">Terms of Service</a>
+    </footer>
+  </div>
+
+  <style>
+    .item-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .item-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.75rem 0.85rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .item-row:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.04); }
+    .item-row input[type="checkbox"] { accent-color: var(--accent); margin-top: 0.2rem; min-width: 16px; }
+
+    .item-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      cursor: pointer;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-text {
+      font-size: 0.9rem;
+      color: var(--text);
+      word-break: break-word;
+      line-height: 1.45;
+    }
+
+    .item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+  </style>
+
+  <script>
+    function toggleAll(checked) {
+      document.querySelectorAll('input[name="selectedItems"]').forEach(function(cb) { cb.checked = checked; });
+    }
+  </script>
+</body>
+</html>

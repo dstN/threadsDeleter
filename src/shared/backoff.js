@@ -1,10 +1,10 @@
-import { BACKOFF } from '../config.js';
+import { BACKOFF } from '../config/config.js';
 
 /**
  * Execute an async function with exponential backoff + jitter.
  *
  * Only retries when the error is deemed **retryable** (HTTP 429,
- * network errors, 5xx).  All other errors are thrown immediately.
+ * network errors, 5xx). All other errors are thrown immediately.
  *
  * @param {Function} fn        – async function to execute
  * @param {object}   [logger]  – optional logger instance
@@ -51,22 +51,10 @@ export async function withBackoff(fn, logger, opts = {}) {
  * @returns {boolean}
  */
 function isRetryable(err) {
-	// HTTP 429 – Too Many Requests
 	if (err.status === 429) return true;
-
-	// HTTP 5xx – server-side issues
 	if (err.status >= 500 && err.status < 600) return true;
-
-	// Network-level failures (Node fetch)
-	if (err.code === 'ECONNRESET' || err.code === 'ETIMEDOUT' || err.code === 'ENOTFOUND') {
-		return true;
-	}
-
-	// Generic fetch errors (e.g. "Failed to fetch")
-	if (err.name === 'TypeError' && /fetch/i.test(err.message)) {
-		return true;
-	}
-
+	if (err.code === 'ECONNRESET' || err.code === 'ETIMEDOUT' || err.code === 'ENOTFOUND') return true;
+	if (err.name === 'TypeError' && /fetch/i.test(err.message)) return true;
 	return false;
 }
 

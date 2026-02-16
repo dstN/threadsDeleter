@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Threads Deleter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Threads Deleter</h1>
+      <p>Privacy Policy</p>
+    </header>
+
+    <div class="card">
+      <h2>Privacy Policy</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Last updated: <%= new Date().toLocaleDateString() %></p>
+
+      <h3 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text);">1. Data Collection & Cookies</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        Threads Deleter ("we", "our", or "us") operates as a <strong>stateless client-side tool</strong>.
+        <br><br>
+        <strong>We do not use cookies.</strong> Your authentication data (Access Token) is stored locally in your browser's <code>SessionStorage</code> and is transmitted securely to our server only when you perform an action.
+        We do not maintain a database of user data.
+      </p>
+
+      <h3 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text);">2. Data Usage</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        We use your Threads data solely to:
+        <ul style="list-style: disc; margin-left: 1.5rem; margin-top: 0.5rem;">
+          <li>Display your username (for confirmation).</li>
+          <li>Fetch your posts and replies (to show previews).</li>
+          <li>Delete the specific content you select.</li>
+        </ul>
+      </p>
+
+      <h3 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text);">3. Data Retention</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        We do not retain any of your data.
+        <br>
+        - <strong>Access Tokens:</strong> Discarded immediately upon logout or when your session expires.
+        <br>
+        - <strong>Activity Logs:</strong> Processed in-memory and discarded. We do not store deletion history.
+      </p>
+
+      <h3 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text);">4. Third-Party Services</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        This app retrieves data from the Meta Threads API. By using this app, you also agree to Meta's Terms of Service and Privacy Policy.
+      </p>
+    </div>
+
+    <footer>
+      <a href="/" style="color: var(--accent); text-decoration: none;">&larr; Back to Home</a>
+    </footer>
+  </div>
+</body>
+</html>

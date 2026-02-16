@@ -1,5 +1,5 @@
-import { fetchUserReplies, fetchUserThreads, fetchMediaLikes } from '../api/threadsClient.js';
-import { PAGE_SIZE } from '../config.js';
+import { fetchUserReplies, fetchUserThreads, fetchMediaLikes } from '../../infrastructure/threads/threadsClient.js';
+import { PAGE_SIZE } from '../../config/config.js';
 
 /**
  * Service responsible for fetching the authenticated user's
@@ -37,9 +37,7 @@ export async function fetchReplies(token, limit, logger, { type = 'replies', min
 	});
 
 	if (type === 'all') {
-		// Fetch from both endpoints and interleave by timestamp
 		const [repliesArr, postsArr] = await Promise.all([fetchPaginated(fetchUserReplies, token, limit, logger), fetchPaginated(fetchUserThreads, token, limit, logger)]);
-		// Merge and sort newest first, then take `limit`
 		const merged = [...repliesArr, ...postsArr].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, limit);
 		items.push(...merged);
 	} else {
@@ -89,12 +87,6 @@ export async function fetchReplies(token, limit, logger, { type = 'replies', min
 /**
  * Generic paginated fetch — walks cursor pages until `limit` items
  * are collected or no more pages remain.
- *
- * @param {Function} fetchFn – one of fetchUserReplies / fetchUserThreads
- * @param {string}   token
- * @param {number}   limit
- * @param {object}   logger
- * @returns {Promise<object[]>}
  */
 async function fetchPaginated(fetchFn, token, limit, logger) {
 	const results = [];

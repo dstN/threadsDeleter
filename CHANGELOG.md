@@ -9,6 +9,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No unreleased changes._
 
+## [2.1.0] - 2026-02-16
+
+### Added
+
+- **Vercel Support** — Added `vercel.json` and `api/index.js` for serverless deployment.
+- **Meta Compliance** — Added `POST /auth/deauthorize` and `POST /auth/data-deletion` callbacks with `signed_request` validation.
+- **Zero-Cookie Architecture** — Refactored web interface to use `SessionStorage` and hidden form fields instead of server-side sessions/cookies.
+- **Privacy Improvements** — Updated Privacy Policy to reflect "No Cookie" status.
+
+### Changed
+
+- **UI Polish** — Hidden manual "Access Token" input on login page (OAuth is now the primary method).
+- **Stateless Auth** — Removed `express-session` dependency.
+- **Documentation** — Added `DEPLOYMENT.md` and updated `OAUTH_SETUP.md` with "HTTPS Hack" and Vercel instructions.
+
+## [2.0.0] - 2026-02-15
+
+### Added
+
+- **Hexagonal architecture** — Refactored entire codebase into `core/`, `infrastructure/`, `shared/`, and `interfaces/` layers.
+- **Web interface** — Express-based dashboard with login, deletion controls, and results page.
+- **OAuth 2.0 support** — Authorization Code Flow for Threads API (`OAuthProvider`).
+- **Token auth provider** — `TokenAuthProvider` class implementing the `AuthProvider` interface.
+- **DeletionReport** domain object for structured, immutable deletion results.
+- **Custom error classes** — `AuthenticationError`, `ValidationError`, `RateLimitError`, `ApiError`.
+- **CSRF protection** on web interface with per-session tokens.
+- **Helmet** HTTP security headers on all web responses.
+- **EJS templates** — Dark-themed, responsive views (login, dashboard, results, error).
+- **Docker support** — Multi-stage `Dockerfile` + `docker-compose.yml`.
+- **GitHub Actions CI** — Lint, test, and syntax check across Node 18/20/22.
+- **ESLint** + **Prettier** + **EditorConfig** for consistent code style.
+- **Jest unit tests** for `rateLimiter`, `validators`, and `DeletionReport`.
+- `CONTRIBUTING.md` contribution guidelines.
+- `SECURITY.md` security policy.
+- `npm run start:web` script to launch the web server.
+
+### Changed
+
+- **BREAKING:** All module paths changed due to hexagonal architecture refactor.
+- CLI entry point moved from `src/cli.js` to `src/interfaces/cli/cli.js`.
+- Config moved from `src/config.js` to `src/config/config.js` with OAuth + web settings.
+- `package.json` bin entry updated to new CLI path.
+- `package.json` version bumped to `2.0.0`.
+
 ## [1.1.0] - 2026-02-15
 
 ### Added

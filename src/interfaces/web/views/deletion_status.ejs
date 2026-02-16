@@ -1,0 +1,23 @@
+<%- include('layout', { body: `
+<div class="card" style="text-align: center; padding: 3rem 1rem;">
+  <div style="font-size: 3rem; margin-bottom: 1rem;">🗑️</div>
+  <h1>Data Deletion Confirmed</h1>
+  <p style="color: var(--text-muted); margin-bottom: 2rem;">
+    Your request to delete your data has been processed.
+  </p>
+  
+  <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 2rem; text-align: left; display: inline-block;">
+    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Confirmation Code:</p>
+    <code style="font-size: 1.2rem; display: block; margin-top: 0.5rem; letter-spacing: 1px;">${code}</code>
+  </div>
+
+  <p style="font-size: 0.9rem; max-width: 500px; margin: 0 auto; line-height: 1.6;">
+    <strong>Note:</strong> Threads Deleter does not store your content or personal data on its servers. 
+    Once you log out or your session expires, all temporary access tokens are discarded immediately.
+  </p>
+
+  <div style="margin-top: 3rem;">
+    <a href="/" class="btn btn-primary">Return to Home</a>
+  </div>
+</div>
+` }) %>

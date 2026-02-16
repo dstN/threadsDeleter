@@ -1,6 +1,6 @@
 # Threads Deleter
 
-> Production-grade CLI tool to bulk-delete posts, replies, or both from your Threads profile using the official Meta Threads API.
+> Enterprise-grade CLI & web tool to bulk-delete posts, replies, or both from your Threads profile using the official Meta Threads API.
 
 ---
 
@@ -8,8 +8,10 @@
 
 | Feature                     | Description                                                        |
 | --------------------------- | ------------------------------------------------------------------ |
+| **Dual interface**          | CLI tool + web dashboard — same core logic, two entry points       |
 | **Type targeting**          | Delete posts, replies, or all — you choose with `--type`           |
 | **Like threshold**          | Only delete items below a like count with `--min-likes`            |
+| **OAuth + Token auth**      | Direct access token or OAuth 2.0 Authorization Code Flow           |
 | **Cursor-based pagination** | Walks through your thread history to find up to 100 items          |
 | **Rate-limit aware**        | Hard local cap of 100 deletions/day (matches API limit)            |
 | **Exponential backoff**     | Automatic retry with jitter for HTTP 429 and transient errors      |
@@ -20,18 +22,18 @@
 | **Token masking**           | Access tokens are redacted in all log output                       |
 | **DotEnv support**          | Reads `THREADS_ACCESS_TOKEN` from `.env` automatically             |
 | **Loop mode**               | `--loop` keeps running every ~24h until the profile is empty       |
-| **File output**             | Optionally write the full log to a file for auditing               |
+| **Stateless Privacy**       | **No cookies**, no database. Tokens live in your browser session   |
+| **Vercel Ready**            | Optimized for serverless deployment (Vercel, AWS Lambda, etc.)     |
+| **Meta Compliance**         | Includes Data Deletion and Deauthorize callback endpoints          |
+| **Docker ready**            | Multi-stage Dockerfile + docker-compose included                   |
 
 ---
 
 ## Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/dstN/threadsDeleter.git
 cd threadsDeleter
-
-# Install dependencies
 npm install
 ```
 
@@ -43,29 +45,35 @@ npm install
   - `threads_read_replies`
   - `threads_delete`
   - `threads_manage_insights` _(only needed for `--min-likes`)_
+- For OAuth: A Meta app with `THREADS_CLIENT_ID` and `THREADS_CLIENT_SECRET`
 
 ---
 
-## Environment Setup
+## Quick Start
 
-1. Copy the example env file:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Fill in your `THREADS_ACCESS_TOKEN`.
-
-The CLI loads `.env` automatically via `dotenv`. You can simply run:
+### Option 1: CLI
 
 ```bash
-node src/cli.js --dry-run
+# Using .env
+cp .env.example .env    # Fill in THREADS_ACCESS_TOKEN
+node src/interfaces/cli/cli.js --dry-run
+
+# Using explicit token
+node src/interfaces/cli/cli.js --token "YOUR_TOKEN" --dry-run
 ```
 
-Or pass the token explicitly to override:
+### Option 2: Web Dashboard
 
 ```bash
-node src/cli.js --token "YOUR_TOKEN" --dry-run
+cp .env.example .env    # Fill in at least SESSION_SECRET
+npm run start:web       # Opens at http://localhost:3000
+```
+
+### Option 3: Docker
+
+```bash
+cp .env.example .env
+docker compose up --build
 ```
 
 ---
@@ -94,129 +102,80 @@ Options:
 
 ```bash
 # Delete the latest 100 replies (default type)
-node src/cli.js --dry-run
+node src/interfaces/cli/cli.js --dry-run
 
 # Delete only top-level posts
-node src/cli.js --type posts --dry-run
+node src/interfaces/cli/cli.js --type posts --dry-run
 
 # Delete everything (posts + replies)
-node src/cli.js --type all --dry-run
+node src/interfaces/cli/cli.js --type all --dry-run
 
 # Delete replies with fewer than 5 likes
-node src/cli.js --min-likes 5 --dry-run
+node src/interfaces/cli/cli.js --min-likes 5 --dry-run
 
-# Delete 50 replies, skip confirmation
-node src/cli.js --limit 50 --yes
-
-# Override token from .env
-node src/cli.js --token "$TOKEN" --dry-run --verbose
-
-# Write full debug log to a file
-node src/cli.js --verbose --output deletion-log.json
-
-# Loop mode — delete 100 replies/day until the profile is clean
-node src/cli.js --type all --loop --yes
+# Loop mode — delete 100/day until the profile is clean
+node src/interfaces/cli/cli.js --type all --loop --yes
 ```
-
----
-
-## Dry-Run Mode
-
-When `--dry-run` is passed, the tool:
-
-1. Validates your token against the API.
-2. Fetches replies normally.
-3. Logs each reply as `"would_delete"` **without** calling the DELETE endpoint.
-4. Prints a summary.
-
-This is safe to run as many times as you like — it will never modify your data.
 
 ---
 
 ## Safety Notes
 
-- **Confirmation prompt** — Unless `--yes` is passed, the CLI asks for explicit
-  confirmation before deleting anything.
-- **Fail-safe** — If any individual deletion fails, the process stops immediately.
-  No further deletions are attempted.
-- **Token validation** — The token is verified against `GET /me` before any
-  mutations are performed.
-- **No token leakage** — Tokens are masked in all log output (only the first
-  and last 4 characters are shown).
+- **Confirmation prompt** — Unless `--yes` is passed, the CLI asks before deleting.
+- **Fail-safe** — If any deletion fails, the process stops immediately.
+- **Token validation** — The token is verified against `GET /me` before mutations.
+- **No token leakage** — Tokens are masked in all log output.
+- **CSRF protection** — Web interface uses per-session CSRF tokens.
 
 ---
 
-## Rate Limit
+## Project Structure
 
-The Threads API enforces a hard limit of **100 deletions per account per day**.
-
-This tool enforces that limit locally:
-
-- A counter tracks deletions within each run.
-- Once the limit is reached, additional replies are skipped and the process stops gracefully.
-- The `--limit` flag cannot exceed 100.
-
-If you need to delete more than 100 replies, run the tool again the next day.
-
----
-
-## Output Format
-
-All log output is **structured JSON**, one entry per line:
-
-```json
-{ "timestamp": "2026-02-15T20:00:00.000Z", "level": "info", "action": "deleted", "replyId": "18234567890", "status": "success" }
 ```
-
-Key fields:
-
-| Field       | Description                                                              |
-| ----------- | ------------------------------------------------------------------------ |
-| `timestamp` | ISO-8601 timestamp                                                       |
-| `level`     | `info`, `debug`, `warn`, or `error`                                      |
-| `action`    | What happened (`deleted`, `dry_run_delete`, `fetch_replies_start`, etc.) |
-| `replyId`   | The Threads media ID being acted upon                                    |
-| `status`    | Outcome (`success`, `would_delete`, `error`)                             |
-| `error`     | Error message (only on failures)                                         |
-
-When `--output <file>` is used, the same JSON lines are written to the file.
+src/
+  app.js                                 # Composition root
+  config/
+    config.js                            # All configuration
+  shared/
+    logger.js                            # Structured JSON logger
+    errors.js                            # Custom error classes
+    validators.js                        # Input validation
+    backoff.js                           # Exponential backoff
+  core/
+    domain/
+      deletionReport.js                  # Deletion result domain object
+    services/
+      replyService.js                    # Fetch posts/replies/all
+      deleteService.js                   # Sequential deletion
+      rateLimiter.js                     # Daily deletion counter
+  infrastructure/
+    threads/
+      threadsClient.js                   # Threads API HTTP client
+    auth/
+      tokenAuthProvider.js               # Direct token auth
+      oauthProvider.js                   # OAuth 2.0 flow
+  interfaces/
+    cli/
+      cli.js                            # CLI entry point
+    web/
+      server.js                          # Express server
+      routes.js                          # Route definitions
+      controllers.js                     # Request handlers
+      views/                             # EJS templates
+```
 
 ---
 
 ## Development
 
 ```bash
-# Run the tool locally
-node src/cli.js --help
-
-# Preview with debug output
-node src/cli.js --token "$TOKEN" --dry-run --verbose
-
-# Project structure
-src/
-  cli.js                  # CLI entry point + commander setup
-  config.js               # Centralized configuration
-  logger.js               # Structured logger with token masking
-  api/
-    threadsClient.js      # Low-level Threads API HTTP client
-  services/
-    replyService.js       # Fetch posts/replies/all with optional like filtering
-    deleteService.js      # Sequential deletion with fail-safe
-    rateLimiter.js        # In-memory daily deletion counter
-  utils/
-    validators.js         # Input validation (token, limit)
-    backoff.js            # Exponential backoff with jitter
+npm test        # Run unit tests
+npm run lint    # ESLint check
+npm run check   # Node.js syntax check
+npm run dry-run # CLI dry-run with verbose logging
 ```
 
----
-
-## Contribution Guidelines
-
-1. **Fork** the repository and create a feature branch.
-2. Follow the existing code style (ESM, async/await, no global state).
-3. Add inline comments for non-obvious logic.
-4. Test your changes locally with `--dry-run` before submitting.
-5. Submit a pull request with a clear description of the change.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
 ---
 

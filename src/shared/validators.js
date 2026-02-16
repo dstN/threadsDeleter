@@ -1,4 +1,5 @@
-import { MAX_LIMIT } from '../config.js';
+import { MAX_LIMIT } from '../config/config.js';
+import { ValidationError } from './errors.js';
 
 /**
  * Validate that the access token is a non-empty string with
@@ -6,11 +7,11 @@ import { MAX_LIMIT } from '../config.js';
  * actual authentication is verified by the API call.
  *
  * @param {string} token
- * @throws {Error} if token is missing or obviously malformed
+ * @throws {ValidationError} if token is missing or obviously malformed
  */
 export function validateToken(token) {
 	if (!token || typeof token !== 'string' || token.trim().length < 10) {
-		throw new Error('A valid Threads access token is required. Pass it via --token <value>.');
+		throw new ValidationError('A valid Threads access token is required. Pass it via --token <value> or set THREADS_ACCESS_TOKEN in .env.');
 	}
 }
 
@@ -20,13 +21,13 @@ export function validateToken(token) {
  *
  * @param {*} raw – the raw CLI argument (string or number)
  * @returns {number} validated limit
- * @throws {Error} if the value is out of range or non-numeric
+ * @throws {ValidationError} if the value is out of range or non-numeric
  */
 export function validateLimit(raw) {
 	const n = Number(raw);
 
 	if (!Number.isInteger(n) || n < 1 || n > MAX_LIMIT) {
-		throw new Error(`--limit must be an integer between 1 and ${MAX_LIMIT}. Received: ${raw}`);
+		throw new ValidationError(`--limit must be an integer between 1 and ${MAX_LIMIT}. Received: ${raw}`);
 	}
 
 	return n;

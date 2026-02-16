@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Authenticating...</title>
+		<style>
+			body {
+				background: #0a0a0f;
+				color: #e4e4ef;
+				font-family: sans-serif;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100vh;
+				margin: 0;
+			}
+			.loader {
+				font-size: 1.2rem;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="loader">Completing login...</div>
+		<form id="loginForm" action="/dashboard" method="POST">
+			<input type="hidden" name="token" value="<%= token %>" />
+			<input type="hidden" name="user" value="<%= JSON.stringify(user) %>" />
+		</form>
+		<script>
+			// Store session data in sessionStorage (not cookies)
+			try {
+				sessionStorage.setItem('threads_token', '<%= token %>');
+				sessionStorage.setItem('threads_user', '<%= JSON.stringify(user) %>');
+			} catch (e) {
+				console.error('Storage failed', e);
+			}
+			// Auto-submit to enter dashboard
+			document.getElementById('loginForm').submit();
+		</script>
+	</body>
+</html>

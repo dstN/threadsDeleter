@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — Threads Deleter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Threads Deleter</h1>
+      <p>Manage your Threads content</p>
+    </header>
+
+    <div class="card">
+      <h2>Deletion Report</h2>
+
+      <% if (report.meta?.dryRun) { %>
+        <div class="alert alert-warning">DRY-RUN — No items were actually deleted.</div>
+      <% } %>
+      <% if (report.meta?.message) { %>
+        <div class="alert alert-warning"><%= report.meta.message %></div>
+      <% } %>
+      <% if (report.success) { %>
+        <div class="alert alert-success">Operation completed successfully.</div>
+      <% } else { %>
+        <div class="alert alert-error">Some items failed to delete.</div>
+      <% } %>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-value" style="color: var(--success);"><%= report.deleted %></div>
+          <div class="stat-label">Deleted</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" style="color: var(--warning);"><%= report.skipped %></div>
+          <div class="stat-label">Skipped</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" style="color: var(--danger);"><%= report.failed %></div>
+          <div class="stat-label">Failed</div>
+        </div>
+      </div>
+
+      <p style="color: var(--text-muted); font-size: 0.85rem;">
+        Type: <strong><%= report.meta?.type || 'replies' %></strong>
+        &nbsp;&middot;&nbsp;
+        Total processed: <strong><%= report.total %></strong>
+        &nbsp;&middot;&nbsp;
+        <%= report.timestamp %>
+      </p>
+    </div>
+
+    <% if (report.items) { %>
+      <% if (report.items.deleted && report.items.deleted.length > 0) { %>
+        <details class="accordion">
+          <summary class="accordion-header">
+            <span class="accordion-icon">▸</span>
+            Show Deleted Items (<%= report.items.deleted.length %>)
+          </summary>
+          <div class="accordion-body">
+            <% report.items.deleted.forEach(function(item) { %>
+              <div class="result-item">
+                <span class="result-badge" style="color: var(--success);">✓</span>
+                <div class="result-content">
+                  <span class="item-text">
+                    <% if (item.text) { %>
+                      <%= item.text.length > 150 ? item.text.slice(0, 150) + '…' : item.text %>
+                    <% } else { %>
+                      <em style="color:var(--text-muted);">No text</em>
+                    <% } %>
+                  </span>
+                  <span class="item-meta">
+                    <%= item.is_reply ? '↩ Reply' : '📝 Post' %>
+                    <% if (item.likes != null) { %> · ♥ <%= item.likes %><% } %>
+                    <% if (item.timestamp) { %> · <%= new Date(item.timestamp).toLocaleDateString() %><% } %>
+                    · ID: <%= item.id %>
+                  </span>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </details>
+      <% } %>
+
+      <% if (report.items.skipped && report.items.skipped.length > 0) { %>
+        <details class="accordion">
+          <summary class="accordion-header">
+            <span class="accordion-icon">▸</span>
+            Show Skipped Items (<%= report.items.skipped.length %>)
+          </summary>
+          <div class="accordion-body">
+            <% report.items.skipped.forEach(function(item) { %>
+              <div class="result-item">
+                <span class="result-badge" style="color: var(--warning);">⊘</span>
+                <div class="result-content">
+                  <span class="item-text">
+                    <% if (item.text) { %>
+                      <%= item.text.length > 150 ? item.text.slice(0, 150) + '…' : item.text %>
+                    <% } else { %>
+                      <em style="color:var(--text-muted);">No text</em>
+                    <% } %>
+                  </span>
+                  <span class="item-meta">ID: <%= item.id %></span>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </details>
+      <% } %>
+
+      <% if (report.items.failed && report.items.failed.length > 0) { %>
+        <details class="accordion" open>
+          <summary class="accordion-header">
+            <span class="accordion-icon">▸</span>
+            Show Failed Items (<%= report.items.failed.length %>)
+          </summary>
+          <div class="accordion-body">
+            <% report.items.failed.forEach(function(item) { %>
+              <div class="result-item">
+                <span class="result-badge" style="color: var(--danger);">✗</span>
+                <div class="result-content">
+                  <span class="item-text">
+                    <% if (item.text) { %>
+                      <%= item.text.length > 150 ? item.text.slice(0, 150) + '…' : item.text %>
+                    <% } else { %>
+                      <em style="color:var(--text-muted);">No text</em>
+                    <% } %>
+                  </span>
+                  <span class="item-meta" style="color: var(--danger);">Error: <%= item.error || 'Unknown' %> · ID: <%= item.id %></span>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </details>
+      <% } %>
+    <% } %>
+
+    <a href="/dashboard" class="btn btn-primary" style="margin-bottom: 0.75rem;">Delete More</a>
+    <a href="/auth/logout" class="btn btn-outline">Logout</a>
+
+    <footer>
+      Threads Deleter &mdash; Use responsibly
+      <br>
+      <a href="/privacy" style="color: var(--text-muted); text-decoration: none; margin-right: 1rem;">Privacy Policy</a>
+      <a href="/tos" style="color: var(--text-muted); text-decoration: none;">Terms of Service</a>
+    </footer>
+  </div>
+
+  <style>
+    .accordion {
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      user-select: none;
+      transition: background 0.15s;
+      list-style: none;
+    }
+
+    .accordion-header::-webkit-details-marker { display: none; }
+    .accordion-header:hover { background: var(--surface-hover); }
+
+    .accordion-icon {
+      transition: transform 0.2s;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    details[open] > .accordion-header .accordion-icon { transform: rotate(90deg); }
+
+    .accordion-body {
+      padding: 0 1rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .result-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.6rem 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .result-badge { font-size: 0.9rem; min-width: 16px; margin-top: 0.1rem; }
+
+    .result-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .result-content .item-text {
+      font-size: 0.85rem;
+      color: var(--text);
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    .result-content .item-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+  </style>
+</body>
+</html>

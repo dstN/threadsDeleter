@@ -8,7 +8,7 @@
  * official Threads API.
  *
  * Usage:
- *   node src/cli.js [--token <TOKEN>] [--type replies] [--limit 100] [--dry-run] [--yes]
+ *   node src/interfaces/cli/cli.js [--token <TOKEN>] [--type replies] [--limit 100] [--dry-run] [--yes]
  *
  * The token can also be provided via THREADS_ACCESS_TOKEN in .env
  */
@@ -18,20 +18,17 @@ import { createRequire } from 'node:module';
 import { createInterface } from 'node:readline';
 import { Command } from 'commander';
 
-import { DEFAULT_LIMIT, MAX_LIMIT } from './config.js';
-import { createLogger } from './logger.js';
-import { validateToken, validateLimit } from './utils/validators.js';
-import { validateAccessToken } from './api/threadsClient.js';
-import { fetchReplies, VALID_TYPES } from './services/replyService.js';
-import { deleteReplies } from './services/deleteService.js';
-import { createRateLimiter } from './services/rateLimiter.js';
-
-// ─── Constants ───────────────────────────────────────────────
-const LOOP_INTERVAL_MS = 1441 * 60 * 1000; // 24 hours + 1 minute
+import { DEFAULT_LIMIT, MAX_LIMIT, LOOP_INTERVAL_MS } from '../../config/config.js';
+import { createLogger } from '../../shared/logger.js';
+import { validateToken, validateLimit } from '../../shared/validators.js';
+import { validateAccessToken } from '../../infrastructure/threads/threadsClient.js';
+import { fetchReplies, VALID_TYPES } from '../../core/services/replyService.js';
+import { deleteReplies } from '../../core/services/deleteService.js';
+import { createRateLimiter } from '../../core/services/rateLimiter.js';
 
 // ─── Read package.json version ───────────────────────────────
 const require = createRequire(import.meta.url);
-const { version, description } = require('../package.json');
+const { version, description } = require('../../../package.json');
 
 // ─── CLI definition ──────────────────────────────────────────
 const program = new Command();
@@ -45,38 +42,29 @@ program.parseAsync(process.argv).catch((err) => {
 
 // ─── Main workflow ───────────────────────────────────────────
 async function run(opts) {
-	// Resolve token: CLI flag takes priority, then .env
 	const token = opts.token || process.env.THREADS_ACCESS_TOKEN;
 	const { verbose, logLevel, output, yes: skipConfirmation } = opts;
 	const dryRun = opts.dryRun;
 	const loop = opts.loop;
 
-	// 1. Initialize logger (before anything else so errors are captured)
-	const logger = createLogger({
-		logLevel,
-		verbose,
-		output,
-		token,
-	});
+	const logger = createLogger({ logLevel, verbose, output, token });
 
 	try {
-		// 2. Validate inputs
+		// Validate inputs
 		validateToken(token);
 		const limit = validateLimit(opts.limit);
 
-		// 3. Validate --type
 		const type = opts.type;
 		if (!VALID_TYPES.includes(type)) {
 			throw new Error(`--type must be one of: ${VALID_TYPES.join(', ')}. Received: ${type}`);
 		}
 
-		// 4. Parse optional min-likes threshold
 		const minLikes = opts.minLikes !== undefined ? Number(opts.minLikes) : undefined;
 		if (minLikes !== undefined && (!Number.isInteger(minLikes) || minLikes < 0)) {
 			throw new Error(`--min-likes must be a non-negative integer. Received: ${opts.minLikes}`);
 		}
 
-		// 5. Validate access token against the API
+		// Validate access token against the API
 		logger.info({ action: 'token_validation', status: 'pending' });
 		const user = await validateAccessToken(token, logger);
 		logger.info({
@@ -86,14 +74,13 @@ async function run(opts) {
 			username: user.username,
 		});
 
-		// 6. Run deletion (once or in a loop)
+		// Run deletion (once or in a loop)
 		if (loop) {
 			logger.info({
 				action: 'loop_mode',
 				message: `Loop mode enabled. Will repeat every ${Math.round(LOOP_INTERVAL_MS / 60000)} minutes (~24h 1m) until nothing is left.`,
 			});
 
-			// First run always requires confirmation (unless --yes)
 			if (!dryRun && !skipConfirmation) {
 				const confirmed = await confirm(`\n⚠  Loop mode will keep deleting ${type} (up to ${limit}/day) until your profile is empty. Continue? (y/N) `);
 				if (!confirmed) {
@@ -130,13 +117,8 @@ async function run(opts) {
 				await sleep(LOOP_INTERVAL_MS);
 			}
 		} else {
-			// Single run with its own confirmation
 			const deletedCount = await runOnce(token, limit, type, minLikes, dryRun, logger, skipConfirmation);
-
-			if (deletedCount === null) {
-				// User cancelled
-				return;
-			}
+			if (deletedCount === null) return;
 		}
 	} catch (err) {
 		logger.error({
@@ -150,15 +132,9 @@ async function run(opts) {
 
 // ─── Single deletion run ─────────────────────────────────────
 
-/**
- * Execute one deletion pass: fetch → confirm → delete → summarize.
- *
- * @returns {Promise<number|null>} number of items deleted, or null if user cancelled
- */
 async function runOnce(token, limit, type, minLikes, dryRun, logger, askConfirmation = false) {
 	const label = type === 'all' ? 'items' : type;
 
-	// Fetch items
 	const replies = await fetchReplies(token, limit, logger, { type, minLikes });
 	logger.count('fetched', replies.length);
 
@@ -167,7 +143,6 @@ async function runOnce(token, limit, type, minLikes, dryRun, logger, askConfirma
 		return 0;
 	}
 
-	// Preview
 	logger.info({
 		action: 'preview',
 		found: replies.length,
@@ -175,7 +150,6 @@ async function runOnce(token, limit, type, minLikes, dryRun, logger, askConfirma
 		message: dryRun ? `DRY-RUN mode — no ${label} will be deleted.` : `About to permanently delete ${replies.length} ${label}.`,
 	});
 
-	// Confirmation prompt (single-run only, loop confirms upfront)
 	if (!dryRun && askConfirmation) {
 		const confirmed = await confirm(`\n⚠  You are about to permanently delete ${replies.length} ${label}. Continue? (y/N) `);
 		if (!confirmed) {
@@ -184,11 +158,9 @@ async function runOnce(token, limit, type, minLikes, dryRun, logger, askConfirma
 		}
 	}
 
-	// Delete
 	const rateLimiter = createRateLimiter(logger);
 	const result = await deleteReplies(replies, token, rateLimiter, logger, { dryRun });
 
-	// Summary
 	logger.info({
 		action: 'result',
 		deleted: result.deleted.length,
@@ -208,10 +180,6 @@ async function runOnce(token, limit, type, minLikes, dryRun, logger, askConfirma
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-/**
- * Interactive yes/no confirmation prompt.
- * Resolves `true` only on "y" or "yes".
- */
 function confirm(question) {
 	return new Promise((resolve) => {
 		const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -222,9 +190,6 @@ function confirm(question) {
 	});
 }
 
-/**
- * Promise-based sleep.
- */
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }

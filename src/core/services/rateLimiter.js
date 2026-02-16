@@ -1,4 +1,5 @@
-import { MAX_DELETIONS_PER_DAY } from '../config.js';
+import { MAX_DELETIONS_PER_DAY } from '../../config/config.js';
+import { RateLimitError } from '../../shared/errors.js';
 
 /**
  * In-memory rate-limiter that enforces the Threads API daily
@@ -7,8 +8,8 @@ import { MAX_DELETIONS_PER_DAY } from '../config.js';
  * This is a **local** safeguard — the API itself also enforces
  * the limit, but failing locally is cheaper and more informative.
  *
- * Instances are intentionally short-lived (one per CLI invocation)
- * so there is no persistence concern.
+ * Instances are intentionally short-lived (one per CLI invocation
+ * or per web request session).
  */
 
 /**
@@ -36,8 +37,7 @@ export function createRateLimiter(logger, max = MAX_DELETIONS_PER_DAY) {
 		 */
 		record() {
 			if (count >= max) {
-				const err = new Error(`Daily deletion limit reached (${max}). Try again tomorrow.`);
-				err.code = 'RATE_LIMIT_EXCEEDED';
+				const err = new RateLimitError(`Daily deletion limit reached (${max}). Try again tomorrow.`);
 				logger.warn({
 					action: 'rate_limit_exceeded',
 					deletionsToday: count,

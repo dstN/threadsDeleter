@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — Threads Deleter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Threads Deleter</h1>
+      <p>Manage your Threads content</p>
+    </header>
+
+    <div class="user-badge">
+      Connected as <strong>@<%= user.username || 'unknown' %></strong>
+      &nbsp;&middot;&nbsp;
+      <a href="/auth/logout" style="color: var(--text-muted); font-size: 0.85rem;">Logout</a>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <form action="/preview" method="POST">
+      <!-- Stateless: Pass token and user details -->
+      <input type="hidden" name="token" value="<%= token %>">
+      <input type="hidden" name="user" value="<%= JSON.stringify(user) %>">
+      
+      <div class="card">
+        <h2>Delete Content</h2>
+
+        <label for="type">Content type</label>
+        <select id="type" name="type">
+          <% types.forEach(function(t) { %>
+            <option value="<%= t %>"><%= t.charAt(0).toUpperCase() + t.slice(1) %></option>
+          <% }); %>
+        </select>
+
+        <label for="limit">Max items to fetch (1–100)</label>
+        <input type="number" id="limit" name="limit" value="100" min="1" max="100">
+
+        <label for="minLikes">Min likes threshold (optional)</label>
+        <input type="number" id="minLikes" name="minLikes" placeholder="e.g. 5 — only delete below this" min="0">
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="dryRun" name="dryRun">
+          <label for="dryRun">Dry run — preview only, no deletions</label>
+        </div>
+      </div>
+
+      <div class="destructive-warning">
+        <strong>⚠ Warning:</strong> This action is <strong>permanent</strong>.
+        Deleted posts and replies cannot be recovered. Use dry-run mode to preview first.
+      </div>
+
+      <button type="submit" class="btn btn-primary">Fetch &amp; Preview Items</button>
+    </form>
+
+    <footer>
+      Threads Deleter &mdash; Use responsibly
+      <br>
+      <a href="/privacy" style="color: var(--text-muted); text-decoration: none; margin-right: 1rem;">Privacy Policy</a>
+      <a href="/tos" style="color: var(--text-muted); text-decoration: none;">Terms of Service</a>
+    </footer>
+  </div>
+</body>
+</html>

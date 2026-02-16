@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Loading Dashboard...</title>
+		<style>
+			body {
+				background: #0a0a0f;
+				color: #e4e4ef;
+				font-family: sans-serif;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100vh;
+				margin: 0;
+			}
+			.loader {
+				font-size: 1.2rem;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="loader">Loading Dashboard...</div>
+		<form id="dashForm" action="/dashboard" method="POST">
+			<input type="hidden" name="token" id="tokenInput" />
+			<input type="hidden" name="user" id="userInput" />
+		</form>
+		<script>
+			const token = sessionStorage.getItem('threads_token');
+			const user = sessionStorage.getItem('threads_user');
+
+			if (token && user) {
+				document.getElementById('tokenInput').value = token;
+				document.getElementById('userInput').value = user;
+				document.getElementById('dashForm').submit();
+			} else {
+				// No token, redirect to login
+				window.location.href = '/';
+			}
+		</script>
+	</body>
+</html>

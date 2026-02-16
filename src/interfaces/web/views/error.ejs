@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %> — Threads Deleter</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+		<link rel="stylesheet" href="/style.css" />
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<h1>Threads Deleter</h1>
+				<p>Manage your Threads content</p>
+			</header>
+
+			<div class="card" style="text-align: center">
+				<h2 style="color: var(--danger)">Error</h2>
+				<p style="margin-top: 1rem; color: var(--text-muted)"><%= message %></p>
+				<a href="/" class="btn btn-outline" style="margin-top: 1.5rem">Back to Login</a>
+			</div>
+
+			<footer>
+				Threads Deleter &mdash; Use responsibly
+				<br />
+				<a href="/privacy" style="color: var(--text-muted); text-decoration: none; margin-right: 1rem"
+					>Privacy Policy</a
+				>
+				<a href="/tos" style="color: var(--text-muted); text-decoration: none">Terms of Service</a>
+			</footer>
+		</div>
+	</body>
+</html>

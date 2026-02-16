@@ -1,4 +1,4 @@
-import { deleteThread } from '../api/threadsClient.js';
+import { deleteThread } from '../../infrastructure/threads/threadsClient.js';
 
 /**
  * Service responsible for deleting a batch of replies while
@@ -55,7 +55,7 @@ export async function deleteReplies(replies, token, rateLimiter, logger, { dryRu
 			});
 			skipped.push(id);
 			logger.count('skipped');
-			break; // hard stop — do not continue
+			break;
 		}
 
 		// ── Dry-run mode ─────────────────────────────────────────
@@ -83,7 +83,6 @@ export async function deleteReplies(replies, token, rateLimiter, logger, { dryRu
 				logger.count('deleted');
 				logger.info({ action: 'deleted', replyId: id, status: 'success' });
 			} else {
-				// API returned 200 but success !== true — treat as failure
 				throw new Error(`Unexpected response: ${JSON.stringify(result)}`);
 			}
 		} catch (err) {
