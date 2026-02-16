@@ -7,7 +7,10 @@
 		<link rel="stylesheet" href="/fonts/index.css" />
 		<link rel="stylesheet" href="/style.css" />
 		<script>
-			if (sessionStorage.getItem('threads_token')) {
+			const hasError = <%= error ? 'true' : 'false' %>;
+			if (hasError) {
+				sessionStorage.clear();
+			} else if (sessionStorage.getItem('threads_token')) {
 				window.location.href = '/dashboard';
 			}
 		</script>
@@ -28,22 +31,9 @@
 				<p>Manage your Threads content</p>
 			</header>
 
-			<!-- Manual Token Input (Hidden for Web Dashboard, CLI only) -->
-			<!--
-    <div class="card">
-      <h2>Login with Access Token</h2>
-      <% if (error) { %>
-        <div class="alert alert-error"><%= error %></div>
-      <% } %>
-      <form action="/auth/token" method="POST">
-        <label for="token">Threads Access Token</label>
-        <input type="password" id="token" name="token" placeholder="Paste your long-lived access token" required>
-        <button type="submit" class="btn btn-primary">Connect</button>
-      </form>
-    </div>
-
-    <div class="divider">or</div>
-    -->
+			<% if (error) { %>
+				<div class="alert alert-error"><%= error %></div>
+			<% } %>
 
 			<div class="card">
 				<h2>Login with Threads</h2>
