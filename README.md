@@ -1,6 +1,6 @@
 # Threads Deleter
 
-> Enterprise-grade CLI & web tool to bulk-delete posts, replies, or both from your Threads profile using the official Meta Threads API.
+> CLI and web tool that bulk-deletes posts, replies, or both from your Threads profile through the official Meta Threads API.
 
 ---
 
@@ -8,8 +8,8 @@
 
 | Feature                     | Description                                                        |
 | --------------------------- | ------------------------------------------------------------------ |
-| **Dual interface**          | CLI tool + web dashboard — same core logic, two entry points       |
-| **Type targeting**          | Delete posts, replies, or all — you choose with `--type`           |
+| **Dual interface**          | CLI tool + web dashboard, same core logic, two entry points       |
+| **Type targeting**          | Delete posts, replies, or all, you choose with `--type`           |
 | **Like threshold**          | Only delete items below a like count with `--min-likes`            |
 | **OAuth + Token auth**      | Direct access token or OAuth 2.0 Authorization Code Flow           |
 | **Cursor-based pagination** | Walks through your thread history to find up to 100 items          |
@@ -17,7 +17,7 @@
 | **Exponential backoff**     | Automatic retry with jitter for HTTP 429 and transient errors      |
 | **Dry-run mode**            | Preview what _would_ be deleted without touching the API           |
 | **Idempotent**              | Duplicate IDs within a run are skipped automatically               |
-| **Fail-safe**               | Stops immediately on the first error — no silent partial deletions |
+| **Fail-safe**               | Stops immediately on the first error, no silent partial deletions |
 | **Structured logging**      | JSON log lines with timestamp, action, ID, and status              |
 | **Token masking**           | Access tokens are redacted in all log output                       |
 | **DotEnv support**          | Reads `THREADS_ACCESS_TOKEN` from `.env` automatically             |
@@ -121,11 +121,11 @@ node src/interfaces/cli/cli.js --type all --loop --yes
 
 ## Safety Notes
 
-- **Confirmation prompt** — Unless `--yes` is passed, the CLI asks before deleting.
-- **Fail-safe** — If any deletion fails, the process stops immediately.
-- **Token validation** — The token is verified against `GET /me` before mutations.
-- **No token leakage** — Tokens are masked in all log output.
-- **CSRF protection** — Web interface uses per-session CSRF tokens.
+- **Confirmation prompt**: Unless `--yes` is passed, the CLI asks before deleting.
+- **Fail-safe**: If any deletion fails, the process stops immediately.
+- **Token validation**: The token is verified against `GET /me` before mutations.
+- **No token leakage**: Tokens are masked in all log output.
+- **CSRF protection**: Web interface uses per-session CSRF tokens.
 
 ---
 
