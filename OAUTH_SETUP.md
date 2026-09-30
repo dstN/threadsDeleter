@@ -17,6 +17,7 @@ To allow users to log in with their Threads account, you need to set up a Meta A
 3. Scroll to **OAuth Settings**.
 4. Add your Redirect URI: `http://localhost:3000/auth/callback`
    _(Or your production URL if deployed, e.g. `https://your-app.vercel.app/auth/callback`)_
+5. Under the Threads use case, open **Customize > Permissions and features** and click **Add** for every permission the app requests: `threads_basic`, `threads_delete`, `threads_read_replies` and `threads_manage_insights`. Each one should then show **Ready for testing**.
 
 ## 3. Get Credentials
 
@@ -60,6 +61,15 @@ This generic error usually means one of the following:
 3.  **App Mode**: If your app is in "Live" mode but you haven't completed App Review, switch to "Development" mode.
 4.  **Tester Role**: In Development mode, the Threads account you are trying to log in with MUST be added as a "Tester" in **App Roles**.
 5.  **Invalid Client ID**: Double-check that `THREADS_CLIENT_ID` matches the **App ID** in the dashboard.
+
+### Login works, but deleting fails
+
+A token only carries the permissions that were requested when it was issued. Up to v2.1.1 the login requested `threads_content_publish` instead of `threads_delete`, so tokens from those versions cannot delete anything.
+
+1.  **Log in again**: Log out and authorize the app again. The consent screen should now include a permission to delete your posts.
+2.  **Redeploy**: A deployed instance keeps requesting the old permissions until it runs the current code.
+3.  **CLI token**: A token in `.env` must be generated again with `threads_delete`.
+4.  **Dashboard**: `threads_delete` must be added to the use case (see step 2).
 
 ### "Insecure Login Blocked" (Meta Requires HTTPS)
 

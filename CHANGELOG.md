@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Fixed
+
+- **OAuth Scopes** — Login now requests `threads_delete` instead of the unused `threads_content_publish`, so deletions no longer fail with a missing permission.
+
+### Changed
+
+- **Documentation** — `OAUTH_SETUP.md` lists the permissions to add in the App Dashboard and explains why tokens from earlier versions must be issued again.
 
 ## [2.1.1] - 2026-02-16
 

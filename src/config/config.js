@@ -37,7 +37,7 @@ export const OAUTH = {
 	redirectUri: process.env.THREADS_REDIRECT_URI || 'http://localhost:3000/auth/callback',
 	authorizationUrl: 'https://threads.net/oauth/authorize',
 	tokenUrl: 'https://graph.threads.net/oauth/access_token',
-	scopes: ['threads_basic', 'threads_read_replies', 'threads_content_publish', 'threads_manage_insights'],
+	scopes: ['threads_basic', 'threads_read_replies', 'threads_delete', 'threads_manage_insights'],
 };
 
 // ─── Web server ──────────────────────────────────────────────
