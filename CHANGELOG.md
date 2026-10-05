@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Preview Select/Deselect All** — The two buttons never worked in the web UI: helmet's default CSP sends `script-src-attr 'none'`, which blocks inline `onclick` handlers. They are now wired via `addEventListener`.
 - **Like Threshold** — `--min-likes` is now applied while paginating, so items above the threshold no longer eat into the fetch limit. Previously, if all of the most recent items were above the threshold, nothing was found at all even though older matching items existed.
 - **OAuth Scopes** — Login now requests `threads_delete` instead of the unused `threads_content_publish`, so deletions no longer fail with a missing permission.
 
