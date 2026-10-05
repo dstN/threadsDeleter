@@ -1,5 +1,5 @@
 import { fetchUserReplies, fetchUserThreads, fetchMediaLikes } from '../../infrastructure/threads/threadsClient.js';
-import { PAGE_SIZE } from '../../config/config.js';
+import { PAGE_SIZE, MAX_PAGES_PER_FETCH } from '../../config/config.js';
 
 /**
  * Service responsible for fetching the authenticated user's
@@ -16,6 +16,12 @@ export const VALID_TYPES = ['replies', 'posts', 'all'];
 
 /**
  * Fetch up to `limit` items from the authenticated user's profile.
+ *
+ * When `minLikes` is set, the like filter is applied *while* paginating:
+ * items at or above the threshold are skipped and further pages are
+ * fetched until `limit` matching items are collected (or no pages remain).
+ * Filtering only the first `limit` items after the fact would return
+ * nothing at all when every recent item is above the threshold.
  *
  * @param {string}  token
  * @param {number}  limit    – maximum number of items to return (1–100)
@@ -36,46 +42,34 @@ export async function fetchReplies(token, limit, logger, { type = 'replies', min
 		minLikes: minLikes ?? 'disabled',
 	});
 
+	// Optional like-count filter, evaluated per item during pagination
+	const stats = { scanned: 0, filteredOut: 0 };
+	const filter = enrichWithLikes ? createLikeFilter(token, minLikes, logger, stats) : undefined;
+
 	if (type === 'all') {
-		const [repliesArr, postsArr] = await Promise.all([fetchPaginated(fetchUserReplies, token, limit, logger), fetchPaginated(fetchUserThreads, token, limit, logger)]);
-		const merged = [...repliesArr, ...postsArr].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, limit);
+		const [repliesArr, postsArr] = await Promise.all([
+			fetchPaginated(fetchUserReplies, token, limit, logger, filter),
+			fetchPaginated(fetchUserThreads, token, limit, logger, filter),
+		]);
+		const merged = [...repliesArr, ...postsArr]
+			.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+			.slice(0, limit);
 		items.push(...merged);
 	} else {
 		const fetcher = type === 'posts' ? fetchUserThreads : fetchUserReplies;
-		const fetched = await fetchPaginated(fetcher, token, limit, logger);
+		const fetched = await fetchPaginated(fetcher, token, limit, logger, filter);
 		items.push(...fetched);
 	}
 
-	// Optional like-count filtering
 	if (enrichWithLikes) {
-		const filtered = [];
-		for (const item of items) {
-			try {
-				item.likes = await fetchMediaLikes(item.id, token, logger);
-			} catch (err) {
-				logger.debug({ action: 'insights_error', replyId: item.id, error: err.message });
-				item.likes = 0;
-			}
-
-			if (item.likes >= minLikes) {
-				logger.debug({
-					action: 'skip_above_threshold',
-					replyId: item.id,
-					likes: item.likes,
-					minLikes,
-				});
-				continue;
-			}
-			filtered.push(item);
-		}
-
 		logger.info({
 			action: 'fetch_complete',
 			type,
-			found: filtered.length,
-			filteredOut: items.length - filtered.length,
+			found: items.length,
+			scanned: stats.scanned,
+			filteredOut: stats.filteredOut,
 		});
-		return filtered;
+		return items;
 	}
 
 	logger.info({ action: 'fetch_complete', type, found: items.length });
@@ -85,18 +79,52 @@ export async function fetchReplies(token, limit, logger, { type = 'replies', min
 // ─── Internal pagination helper ──────────────────────────────
 
 /**
+ * Build an async predicate that enriches an item with its like count
+ * and rejects it when it reaches `minLikes`.
+ */
+function createLikeFilter(token, minLikes, logger, stats) {
+	return async (item) => {
+		stats.scanned++;
+		try {
+			item.likes = await fetchMediaLikes(item.id, token, logger);
+		} catch (err) {
+			logger.debug({ action: 'insights_error', replyId: item.id, error: err.message });
+			item.likes = 0;
+		}
+
+		if (item.likes >= minLikes) {
+			stats.filteredOut++;
+			logger.debug({
+				action: 'skip_above_threshold',
+				replyId: item.id,
+				likes: item.likes,
+				minLikes,
+			});
+			return false;
+		}
+		return true;
+	};
+}
+
+/**
  * Generic paginated fetch — walks cursor pages until `limit` items
  * are collected or no more pages remain.
+ *
+ * @param {(item: object) => Promise<boolean>} [filter] – optional async
+ *   predicate; items it rejects are not counted towards `limit`, so
+ *   pagination continues past them.
  */
-async function fetchPaginated(fetchFn, token, limit, logger) {
+async function fetchPaginated(fetchFn, token, limit, logger, filter) {
 	const results = [];
 	let cursor = undefined;
 	let pagesScanned = 0;
-	const MAX_PAGES = 20;
 
-	while (results.length < limit && pagesScanned < MAX_PAGES) {
+	while (results.length < limit && pagesScanned < MAX_PAGES_PER_FETCH) {
+		// With a filter active most items on a page may be rejected,
+		// so always request full pages instead of just the remainder.
+		const pageLimit = filter ? PAGE_SIZE : Math.min(PAGE_SIZE, limit - results.length);
 		const page = await fetchFn(token, logger, {
-			limit: Math.min(PAGE_SIZE, limit - results.length),
+			limit: pageLimit,
 			after: cursor,
 		});
 
@@ -104,6 +132,8 @@ async function fetchPaginated(fetchFn, token, limit, logger) {
 		if (!data || data.length === 0) break;
 
 		for (const item of data) {
+			if (filter && !(await filter(item))) continue;
+
 			results.push(item);
 			logger.debug({
 				action: 'item_found',
@@ -126,6 +156,16 @@ async function fetchPaginated(fetchFn, token, limit, logger) {
 
 		cursor = page?.paging?.cursors?.after;
 		if (!cursor) break;
+	}
+
+	if (results.length < limit && pagesScanned >= MAX_PAGES_PER_FETCH) {
+		logger.warn({
+			action: 'page_limit_reached',
+			pagesScanned,
+			found: results.length,
+			requestedLimit: limit,
+			message: `Stopped after ${pagesScanned} pages; more items may exist further back.`,
+		});
 	}
 
 	return results;
