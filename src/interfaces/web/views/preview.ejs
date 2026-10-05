@@ -43,8 +43,8 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <h2 style="margin: 0;">Select Items</h2>
           <div style="display: flex; gap: 0.5rem;">
-            <button type="button" onclick="toggleAll(true)" class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Select All</button>
-            <button type="button" onclick="toggleAll(false)" class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Deselect All</button>
+            <button type="button" id="select-all" class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Select All</button>
+            <button type="button" id="deselect-all" class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Deselect All</button>
           </div>
         </div>
 
@@ -132,9 +132,13 @@
   </style>
 
   <script>
+    // Event listeners instead of inline onclick="…" handlers: the CSP sent by
+    // helmet includes `script-src-attr 'none'`, which blocks inline handlers.
     function toggleAll(checked) {
       document.querySelectorAll('input[name="selectedItems"]').forEach(function(cb) { cb.checked = checked; });
     }
+    document.getElementById('select-all').addEventListener('click', function() { toggleAll(true); });
+    document.getElementById('deselect-all').addEventListener('click', function() { toggleAll(false); });
   </script>
 </body>
 </html>
