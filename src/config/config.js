@@ -14,6 +14,9 @@ export const MAX_DELETIONS_PER_DAY = 100;
 export const DEFAULT_LIMIT = 100;
 export const MAX_LIMIT = 100;
 export const PAGE_SIZE = 25;
+// Max cursor pages walked per fetch (per endpoint). Bounds the number of
+// API calls when a like threshold filters out most items.
+export const MAX_PAGES_PER_FETCH = 20;
 
 // ─── Backoff ─────────────────────────────────────────────────
 export const BACKOFF = {
